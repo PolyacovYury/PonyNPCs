@@ -1,4 +1,4 @@
-package com.minelittlepony.cnpcs;
+package com.minelittlepony.ponynpcs;
 
 import com.minelittlepony.model.PMAPI;
 import com.minelittlepony.pony.data.IPony;
