@@ -16,11 +16,9 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:' + project.forgeGradleVersion
-        classpath 'org.spongepowered:mixingradle:' + project.mixinGradleVersion
     }
 }
-apply plugin: 'net.minecraftforge.gradle.liteloader'
-apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'net.minecraftforge.gradle.forge'
 
 def ver = "${project.mcVersion}.${project.buildVersion}-${project.buildType}"
 
@@ -29,16 +27,10 @@ group = project.group
 description = project.name
 
 minecraft {
-    version = project.mcVersion
+    version = project.mcVersion + '-' + project.mcfVersion
     mappings = project.mcMappings
     runDir = 'run'
- 
-    replace '@NAME@', project.name
-		replace '@VERSION@', ver
-}
-
-mixin {
-    defaultObfuscationEnv notch
+    makeObfSourceJar = false
 }
 
 sourceCompatibility = 1.8
