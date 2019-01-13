@@ -50,4 +50,5 @@ repositories {
 dependencies {
     deobfCompile 'com.mumfrey:liteloader:1.12.2-SNAPSHOT'
     deobfCompile('com.minelittlepony:minelittlepony:1.12.2.3c-mc1.12.2:srg')
+    deobfCompile('noppes.npcs:CustomNPCs_1.12.231jul18snapshot')
 }
