@@ -16,9 +16,8 @@ import net.minecraft.util.ResourceLocation;
 import noppes.npcs.client.renderer.RenderNPCInterface;
 import noppes.npcs.entity.EntityNpcPony;
 
-import java.util.Map;
-
 import javax.annotation.Nonnull;
+import java.util.Map;
 
 public class RenderPonyNpc<Npc extends EntityNpcPony> extends RenderNPCInterface<Npc> {
 
@@ -30,10 +29,12 @@ public class RenderPonyNpc<Npc extends EntityNpcPony> extends RenderNPCInterface
         this.ponyRenderer = new RenderPonyMob.Proxy<Npc>(this.layerRenderers, manager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(Npc entity) {
-                if (entity.textureLocation == null && entity.display.skinType == 1 && entity.display.playerProfile != null) {
-                    entity.textureLocation = getProfileTexture(entity.display.playerProfile);
-                } else {
-                    entity.textureLocation = RenderPonyNpc.super.getEntityTexture(entity);
+                if (entity.textureLocation == null) {
+                    if (entity.display.skinType == 1 && entity.display.playerProfile != null) {
+                        entity.textureLocation = getProfileTexture(entity.display.playerProfile);
+                    } else {
+                        entity.textureLocation = RenderPonyNpc.super.getEntityTexture(entity);
+                    }
                 }
 
                 return entity.textureLocation;
