@@ -1,5 +1,6 @@
 package com.minelittlepony.ponynpcs;
 
+import com.google.common.collect.Lists;
 import com.minelittlepony.model.PMAPI;
 import com.minelittlepony.pony.data.IPony;
 import com.minelittlepony.pony.data.Pony;
@@ -8,25 +9,35 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.voxelmodpack.hdskins.HDSkinManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import noppes.npcs.client.renderer.RenderNPCInterface;
-import noppes.npcs.entity.EntityNpcPony;
+import noppes.npcs.client.model.ModelClassicPlayer;
+import noppes.npcs.client.model.ModelPlayerAlt;
+import noppes.npcs.client.renderer.RenderCustomNpc;
+import noppes.npcs.entity.EntityCustomNpc;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 
-public class RenderPonyNpc<Npc extends EntityNpcPony> extends RenderNPCInterface<Npc> {
+public class RenderPonyNpc<Npc extends EntityCustomNpc> extends RenderCustomNpc<Npc> {
 
-    private RenderPonyMob.Proxy<Npc> ponyRenderer;
+    private final RenderPonyMob.Proxy<Npc> ponyRenderer;
+    private final boolean slimArms;
+    private final ModelBiped humanModel;
+    protected List<LayerRenderer<Npc>> ponyLayers = Lists.newArrayList();
+    protected List<LayerRenderer<Npc>> humanLayers;
 
-    public RenderPonyNpc(RenderManager manager) {
-        super(PMAPI.earthpony.getBody(), 0.5F);
-
-        this.ponyRenderer = new RenderPonyMob.Proxy<Npc>(this.layerRenderers, manager, PMAPI.earthpony) {
+    public RenderPonyNpc(RenderManager manager, boolean slimArms) {
+        super(PMAPI.earthpony.getBody());
+        this.slimArms = slimArms;
+        humanModel = slimArms ? new ModelPlayerAlt(0, true) : new ModelClassicPlayer(0);
+        humanLayers = layerRenderers;
+        this.ponyRenderer = new RenderPonyMob.Proxy<Npc>(this.ponyLayers, manager, PMAPI.earthpony) {
             @Override
             public ResourceLocation getTexture(Npc entity) {
                 if (entity.display.skinType == 1 && entity.display.playerProfile != null) {
@@ -34,7 +45,6 @@ public class RenderPonyNpc<Npc extends EntityNpcPony> extends RenderNPCInterface
                 } else {
                     entity.textureLocation = RenderPonyNpc.super.getEntityTexture(entity);
                 }
-
                 return entity.textureLocation;
             }
         };
@@ -49,17 +59,16 @@ public class RenderPonyNpc<Npc extends EntityNpcPony> extends RenderNPCInterface
     @Override
     protected void preRenderCallback(Npc entity, float ticks) {
         IPony pony = ponyRenderer.getEntityPony(entity);
-
-        ponyRenderer.getInternalRenderer().setPonyModel(pony.getRace(false).getModel().getModel(false));
-        ponyRenderer.preRenderCallback(entity, ticks);
-
-        setMainModel(ponyRenderer.getModelWrapper().getBody());
-
+        if (pony.getRace(true).isHuman()) {
+            this.layerRenderers = this.humanLayers;
+            this.mainModel = this.humanModel;
+        } else {
+            this.layerRenderers = this.ponyLayers;
+            ponyRenderer.getInternalRenderer().setPonyModel(pony.getRace(false).getModel().getModel(slimArms));
+            ponyRenderer.preRenderCallback(entity, ticks);
+            this.mainModel = ponyRenderer.getModelWrapper().getBody();
+        }
         super.preRenderCallback(entity, ticks);
-    }
-
-    protected void setMainModel(ModelBase model) {
-        this.mainModel = model;
     }
 
     //Copied from MineLittlePony's PlayerSkullRenderer
